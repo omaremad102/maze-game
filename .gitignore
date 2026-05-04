@@ -1,0 +1,42 @@
+# Build outputs
+build/
+build-final/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+
+# Compiled binaries and libraries
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.ilk
+*.exp
+
+# Visual Studio / MSBuild
+.vs/
+*.sln
+*.slnx
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.tlog/
+*.recipe
+x64/
+Debug/
+Release/
+
+# Generated local assets copied with release builds
+final/app.exe
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
