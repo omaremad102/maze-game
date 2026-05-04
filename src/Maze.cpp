@@ -117,7 +117,7 @@ bool Maze::CanMove(int row, int col, int dir, bool hasKey) const {
     }
 
     const Cell& next = grid[nr][nc];
-    if (next.feature == CellFeature::Door && !hasKey) {
+    if (next.feature == CellFeature::Door && !next.collected && !hasKey) {
         return false;
     }
     return true;

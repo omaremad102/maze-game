@@ -80,6 +80,7 @@ struct GameVisuals {
     Texture2D ground{};
     Texture2D wall{};
     Texture2D door{};
+    Texture2D keyIcon{};
     Model groundModel{};
     Model wallModel{};
     Model doorModel{};
@@ -156,25 +157,52 @@ Image CreateBrickImage() {
 }
 
 Image CreateDoorImage() {
-    Image image = GenImageColor(128, 192, Color{86, 48, 28, 255});
+    Image image = GenImageColor(128, 192, Color{52, 39, 34, 255});
     for (int y = 0; y < image.height; ++y) {
         for (int x = 0; x < image.width; ++x) {
-            int plank = x / 24;
-            Color wood = (plank % 2 == 0) ? Color{122, 72, 38, 255} : Color{96, 56, 32, 255};
-            float grain = std::sin((x * 0.15f) + (y * 0.045f) + plank) * 0.5f + 0.5f;
-            ImageDrawPixel(&image, x, y, Blend(Jitter(wood, x, y, 14, 53), Color{166, 100, 52, 255}, grain * 0.20f));
+            int plank = x / 20;
+            Color wood = (plank % 2 == 0) ? Color{104, 59, 34, 255} : Color{78, 45, 30, 255};
+            float grain = std::sin((x * 0.18f) + (y * 0.052f) + plank * 1.7f) * 0.5f + 0.5f;
+            Color lit = Blend(Jitter(wood, x, y, 16, 53), Color{158, 92, 46, 255}, grain * 0.22f);
+            if (x < 10 || x > image.width - 11 || y < 10 || y > image.height - 11) {
+                lit = Blend(lit, Color{26, 24, 26, 255}, 0.62f);
+            }
+            ImageDrawPixel(&image, x, y, lit);
         }
     }
 
-    for (int x = 23; x < image.width; x += 24) {
-        ImageDrawRectangle(&image, x, 0, 3, image.height, Color{50, 30, 20, 255});
+    for (int x = 19; x < image.width; x += 20) {
+        ImageDrawRectangle(&image, x, 0, 3, image.height, Color{34, 25, 21, 255});
     }
-    ImageDrawRectangle(&image, 8, 12, 112, 8, Color{45, 45, 46, 255});
-    ImageDrawRectangle(&image, 8, 86, 112, 8, Color{45, 45, 46, 255});
-    ImageDrawRectangle(&image, 8, 160, 112, 8, Color{45, 45, 46, 255});
-    ImageDrawRectangleLines(&image, {6, 6, 116, 180}, 4, Color{50, 30, 20, 255});
-    ImageDrawCircle(&image, 96, 96, 8, GOLD);
-    ImageDrawCircle(&image, 96, 96, 3, Color{80, 48, 20, 255});
+    ImageDrawRectangle(&image, 6, 16, 116, 9, Color{36, 38, 42, 255});
+    ImageDrawRectangle(&image, 6, 88, 116, 9, Color{36, 38, 42, 255});
+    ImageDrawRectangle(&image, 6, 160, 116, 9, Color{36, 38, 42, 255});
+    ImageDrawRectangleLines(&image, {5, 5, 118, 182}, 5, Color{28, 24, 22, 255});
+    ImageDrawCircle(&image, 96, 96, 13, Color{235, 176, 48, 255});
+    ImageDrawCircle(&image, 96, 96, 6, Color{52, 32, 20, 255});
+    ImageDrawRectangle(&image, 93, 104, 6, 22, Color{235, 176, 48, 255});
+    ImageDrawRectangle(&image, 89, 124, 14, 7, Color{235, 176, 48, 255});
+    ImageDrawRectangle(&image, 100, 130, 8, 6, Color{235, 176, 48, 255});
+    return image;
+}
+
+Image CreateKeyIconImage() {
+    Image image = GenImageColor(128, 128, BLANK);
+    Color glow = Color{76, 196, 205, 70};
+    Color metal = Color{238, 206, 88, 255};
+    Color shadow = Color{91, 62, 22, 210};
+
+    ImageDrawCircle(&image, 41, 54, 30, glow);
+    ImageDrawCircle(&image, 40, 52, 24, metal);
+    ImageDrawCircle(&image, 40, 52, 12, BLANK);
+    ImageDrawCircleLines(&image, 40, 52, 24, Color{255, 236, 132, 255});
+    ImageDrawRectangle(&image, 58, 48, 46, 12, metal);
+    ImageDrawRectangle(&image, 78, 58, 11, 24, metal);
+    ImageDrawRectangle(&image, 94, 58, 11, 17, metal);
+    ImageDrawRectangle(&image, 58, 60, 46, 5, shadow);
+    ImageDrawRectangle(&image, 80, 78, 9, 5, shadow);
+    ImageDrawRectangle(&image, 96, 72, 9, 5, shadow);
+    ImageDrawCircle(&image, 32, 42, 5, Fade(WHITE, 0.70f));
     return image;
 }
 
@@ -193,6 +221,10 @@ void SaveVisualAssetImages() {
     Image door = CreateDoorImage();
     ExportImage(door, "assets/generated/wooden_door.png");
     UnloadImage(door);
+
+    Image key = CreateKeyIconImage();
+    ExportImage(key, "assets/generated/key_icon.png");
+    UnloadImage(key);
 }
 
 Texture2D LoadGeneratedTexture(Image image, const char* exportPath) {
@@ -211,6 +243,7 @@ GameVisuals LoadGameVisuals() {
     visuals.ground = LoadGeneratedTexture(CreateGroundImage(), "assets/generated/ground.png");
     visuals.wall = LoadGeneratedTexture(CreateBrickImage(), "assets/generated/brick_wall.png");
     visuals.door = LoadGeneratedTexture(CreateDoorImage(), "assets/generated/wooden_door.png");
+    visuals.keyIcon = LoadGeneratedTexture(CreateKeyIconImage(), "assets/generated/key_icon.png");
     visuals.groundModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
     visuals.wallModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
     visuals.doorModel = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
@@ -229,6 +262,7 @@ void UnloadGameVisuals(GameVisuals& visuals) {
     UnloadTexture(visuals.ground);
     UnloadTexture(visuals.wall);
     UnloadTexture(visuals.door);
+    UnloadTexture(visuals.keyIcon);
     visuals.ready = false;
 }
 
@@ -506,9 +540,18 @@ void HandleFeaturePickup(GameContext& game, const GameAssets& assets) {
         case CellFeature::Key:
             game.player.keys += 1;
             game.score += 150;
-            ShowMessage(game, "Key collected. The locked door is now passable.");
+            ShowMessage(game, "Key collected. Reach the locked door.");
             PlayIfReady(assets.key, assets);
             cell.collected = true;
+            break;
+        case CellFeature::Door:
+            if (game.player.keys > 0) {
+                game.player.keys -= 1;
+                game.score += 100;
+                cell.collected = true;
+                ShowMessage(game, "Door unlocked.", 1.4f);
+                PlayIfReady(assets.key, assets);
+            }
             break;
         case CellFeature::Coin:
             game.player.coins += 1;
@@ -707,7 +750,7 @@ void DrawFinishLine(Vector3 center) {
 
 void DrawFeature(const Maze& maze, int r, int c, float spinAngle, const GameVisuals& visuals) {
     const Cell& cell = maze.GetCell(r, c);
-    if (cell.collected) {
+    if (cell.collected && cell.feature != CellFeature::Door) {
         return;
     }
 
@@ -718,28 +761,36 @@ void DrawFeature(const Maze& maze, int r, int c, float spinAngle, const GameVisu
             DrawFinishLine(center);
             break;
         case CellFeature::Key:
-            DrawSphere({center.x, 0.95f + bob, center.z}, 0.62f, Fade(GOLD, 0.16f));
-            DrawCylinderEx({center.x - 0.45f, 1.05f + bob, center.z - 0.05f}, {center.x - 0.45f, 1.05f + bob, center.z + 0.05f}, 0.31f, 0.31f, 28, GOLD);
-            DrawCylinderEx({center.x - 0.45f, 1.05f + bob, center.z - 0.065f}, {center.x - 0.45f, 1.05f + bob, center.z + 0.065f}, 0.18f, 0.18f, 28, Color{45, 36, 22, 255});
-            DrawCylinderWiresEx({center.x - 0.45f, 1.05f + bob, center.z - 0.07f}, {center.x - 0.45f, 1.05f + bob, center.z + 0.07f}, 0.31f, 0.31f, 28, YELLOW);
-            DrawCylinderEx({center.x - 0.20f, 1.05f + bob, center.z}, {center.x + 0.70f, 1.05f + bob, center.z}, 0.075f, 0.075f, 16, GOLD);
-            DrawCube({center.x + 0.52f, 0.88f + bob, center.z}, 0.12f, 0.34f, 0.12f, GOLD);
-            DrawCube({center.x + 0.72f, 0.92f + bob, center.z}, 0.12f, 0.26f, 0.12f, Color{245, 190, 45, 255});
-            DrawSphere({center.x + 0.18f, 1.20f + bob, center.z - 0.08f}, 0.06f, Fade(WHITE, 0.65f));
+            DrawSphere({center.x, 0.95f + bob, center.z}, 0.72f, Fade(Color{56, 216, 226, 255}, 0.18f));
+            DrawCylinderEx({center.x - 0.46f, 1.06f + bob, center.z - 0.06f}, {center.x - 0.46f, 1.06f + bob, center.z + 0.06f}, 0.32f, 0.32f, 32, Color{238, 206, 88, 255});
+            DrawCylinderEx({center.x - 0.46f, 1.06f + bob, center.z - 0.075f}, {center.x - 0.46f, 1.06f + bob, center.z + 0.075f}, 0.18f, 0.18f, 32, Color{32, 38, 42, 255});
+            DrawCylinderWiresEx({center.x - 0.46f, 1.06f + bob, center.z - 0.08f}, {center.x - 0.46f, 1.06f + bob, center.z + 0.08f}, 0.32f, 0.32f, 32, Color{255, 240, 142, 255});
+            DrawCylinderEx({center.x - 0.18f, 1.06f + bob, center.z}, {center.x + 0.74f, 1.06f + bob, center.z}, 0.08f, 0.08f, 16, Color{238, 206, 88, 255});
+            DrawCube({center.x + 0.54f, 0.89f + bob, center.z}, 0.13f, 0.35f, 0.13f, Color{238, 206, 88, 255});
+            DrawCube({center.x + 0.74f, 0.94f + bob, center.z}, 0.13f, 0.25f, 0.13f, Color{255, 229, 91, 255});
+            DrawCube({center.x + 0.28f, 1.16f + bob, center.z}, 0.18f, 0.08f, 0.14f, Color{84, 218, 225, 255});
+            DrawSphere({center.x + 0.18f, 1.22f + bob, center.z - 0.08f}, 0.06f, Fade(WHITE, 0.75f));
             break;
         case CellFeature::Door:
             {
+                bool opened = cell.collected;
                 int eastWestOpen = (!cell.walls[1] ? 1 : 0) + (!cell.walls[3] ? 1 : 0);
                 int northSouthOpen = (!cell.walls[0] ? 1 : 0) + (!cell.walls[2] ? 1 : 0);
                 bool eastWestDoor = eastWestOpen > northSouthOpen;
                 Vector3 doorSize = eastWestDoor ? Vector3{0.32f, 2.9f, 2.25f} : Vector3{2.25f, 2.9f, 0.32f};
+                Vector3 openDoorSize = eastWestDoor ? Vector3{2.25f, 2.9f, 0.32f} : Vector3{0.32f, 2.9f, 2.25f};
+                Vector3 openDoorPos = eastWestDoor ? Vector3{center.x, 1.45f, center.z - 1.18f} : Vector3{center.x - 1.18f, 1.45f, center.z};
                 Vector3 frameSize = eastWestDoor ? Vector3{0.46f, 3.15f, 0.20f} : Vector3{0.20f, 3.15f, 0.46f};
                 Vector3 headerSize = eastWestDoor ? Vector3{0.52f, 0.28f, 2.70f} : Vector3{2.70f, 0.28f, 0.52f};
 
-                if (visuals.ready) {
+                if (!opened && visuals.ready) {
                     DrawTexturedBox(visuals.doorModel, {center.x, 1.45f, center.z}, doorSize.x, doorSize.y, doorSize.z, WHITE);
-                } else {
+                } else if (!opened) {
                     DrawCube({center.x, 1.45f, center.z}, doorSize.x, doorSize.y, doorSize.z, Color{120, 72, 40, 255});
+                } else if (visuals.ready) {
+                    DrawTexturedBox(visuals.doorModel, openDoorPos, openDoorSize.x, openDoorSize.y, openDoorSize.z, Fade(WHITE, 0.92f));
+                } else {
+                    DrawCube(openDoorPos, openDoorSize.x, openDoorSize.y, openDoorSize.z, Color{120, 72, 40, 255});
                 }
 
                 if (eastWestDoor) {
@@ -755,7 +806,12 @@ void DrawFeature(const Maze& maze, int r, int c, float spinAngle, const GameVisu
                 }
 
                 DrawCube({center.x, 3.05f, center.z}, headerSize.x, headerSize.y, headerSize.z, Color{72, 55, 42, 255});
-                DrawCubeWires({center.x, 1.45f, center.z}, doorSize.x + 0.07f, doorSize.y + 0.06f, doorSize.z + 0.04f, Fade(GOLD, 0.85f));
+                if (opened) {
+                    DrawCubeWires(openDoorPos, openDoorSize.x + 0.07f, openDoorSize.y + 0.06f, openDoorSize.z + 0.04f, Fade(LIME, 0.70f));
+                    DrawSphere({center.x, 1.45f + 0.14f * Pulse(4.0f), center.z}, 0.35f, Fade(Color{80, 255, 150, 255}, 0.22f));
+                } else {
+                    DrawCubeWires({center.x, 1.45f, center.z}, doorSize.x + 0.07f, doorSize.y + 0.06f, doorSize.z + 0.04f, Fade(GOLD, 0.85f));
+                }
             }
             break;
         case CellFeature::Coin: {
@@ -870,7 +926,7 @@ void DrawMinimap(const GameContext& game, int screenWidth, int screenHeight) {
             Rectangle rect{ x0 + c * cw, y0 + r * ch, cw, ch };
             Color fill = Color{35, 40, 52, 255};
             if (cell.feature == CellFeature::Exit) fill = DARKGREEN;
-            if (cell.feature == CellFeature::Door) fill = BROWN;
+            if (cell.feature == CellFeature::Door) fill = cell.collected ? DARKGREEN : BROWN;
             if (cell.feature == CellFeature::Trap && !cell.collected) fill = MAROON;
             DrawRectangleRec(rect, fill);
 
@@ -894,7 +950,29 @@ void DrawMinimap(const GameContext& game, int screenWidth, int screenHeight) {
     DrawText("Minimap (M)", x0, y0 + miniSize + 8, 18, RAYWHITE);
 }
 
-void DrawHud(const GameContext& game, int screenWidth, int screenHeight) {
+void DrawCarriedKeyIcon(const GameContext& game, const GameVisuals& visuals, int screenHeight) {
+    if (game.player.keys <= 0) {
+        return;
+    }
+
+    Rectangle slot{32.0f, static_cast<float>(screenHeight - 76), 56.0f, 56.0f};
+    DrawRectangleRounded(slot, 0.22f, 10, Fade(Color{12, 18, 22, 255}, 0.74f));
+    DrawRectangleRoundedLinesEx(slot, 0.22f, 10, 2.0f, Fade(GOLD, 0.80f));
+
+    if (visuals.ready && visuals.keyIcon.id != 0) {
+        Rectangle source{0.0f, 0.0f, static_cast<float>(visuals.keyIcon.width), static_cast<float>(visuals.keyIcon.height)};
+        Rectangle dest{slot.x + 7.0f, slot.y + 7.0f, 42.0f, 42.0f};
+        DrawTexturePro(visuals.keyIcon, source, dest, {0.0f, 0.0f}, 0.0f, WHITE);
+        return;
+    }
+
+    DrawCircle(static_cast<int>(slot.x + 21.0f), static_cast<int>(slot.y + 24.0f), 11.0f, GOLD);
+    DrawCircle(static_cast<int>(slot.x + 21.0f), static_cast<int>(slot.y + 24.0f), 5.0f, Color{12, 18, 22, 255});
+    DrawRectangle(static_cast<int>(slot.x + 31.0f), static_cast<int>(slot.y + 21.0f), 18, 6, GOLD);
+    DrawRectangle(static_cast<int>(slot.x + 42.0f), static_cast<int>(slot.y + 27.0f), 5, 12, GOLD);
+}
+
+void DrawHud(const GameContext& game, const GameVisuals& visuals, int screenWidth, int screenHeight) {
     DrawRectangleRounded({18.0f, 18.0f, static_cast<float>(kHudWidth), 185.0f}, 0.2f, 10, Fade(BLACK, 0.42f));
     DrawText("MazeScape 3D Deluxe", 34, 30, 28, RAYWHITE);
     DrawText(TextFormat("Mode: %s", game.settings.label), 34, 66, 20, SKYBLUE);
@@ -905,6 +983,7 @@ void DrawHud(const GameContext& game, int screenWidth, int screenHeight) {
     DrawText(TextFormat("Hints left: %d", game.settings.hintCharges), 250, 120, 20, SKYBLUE);
     DrawText("WASD steps | Space jump | Shift sprint | H hint | M minimap", 34, 148, 18, LIGHTGRAY);
     DrawText("R restart | Esc pause", 34, 170, 18, LIGHTGRAY);
+    DrawCarriedKeyIcon(game, visuals, screenHeight);
 
     if (!game.message.empty()) {
         int w = MeasureText(game.message.c_str(), 24) + 40;
@@ -1033,7 +1112,7 @@ int main(int argc, char** argv) {
             }
             EndMode3D();
 
-            DrawHud(game, screenWidth, screenHeight);
+            DrawHud(game, visuals, screenWidth, screenHeight);
             DrawMinimap(game, screenWidth, screenHeight);
 
             if (game.state == GameScreenState::Paused) {
