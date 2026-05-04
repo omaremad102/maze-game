@@ -15,8 +15,8 @@ namespace {
 constexpr float kCellSize = 4.0f;
 constexpr float kWallThickness = 0.25f;
 constexpr float kWallHeight = 3.5f;
-constexpr float kWalkSpeed = 3.0f;
-constexpr float kSprintMultiplier = 1.28f;
+constexpr float kWalkSpeed = 5.0f;
+constexpr float kSprintMultiplier = 1.4f;
 constexpr float kEnemyMoveInterval = 0.78f;
 constexpr float kPlayerRadius = 0.38f;
 constexpr float kJumpDuration = 0.82f;
